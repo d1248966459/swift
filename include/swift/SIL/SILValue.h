@@ -18,6 +18,7 @@
 #define SWIFT_SIL_SILVALUE_H
 
 #include "swift/Basic/Range.h"
+#include "swift/Basic/UnsafePointerLikeTypeTraits.h"
 #include "swift/SIL/SILType.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/PointerUnion.h"
@@ -51,7 +52,7 @@ namespace swift {
 /// represents a runtime computed value.  Things like SILInstruction derive
 /// from this.
 class alignas(8) ValueBase : public SILAllocated<ValueBase> {
-  PointerUnion<SILType, SILTypeList*> TypeOrTypeList;
+  UnsafePointerUnion<SILType, SILTypeList *> TypeOrTypeList;
   Operand *FirstUse = nullptr;
   friend class Operand;
   friend class SILValue;

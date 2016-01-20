@@ -14,6 +14,7 @@
 #define SWIFT_DRIVER_JOB_H
 
 #include "swift/Basic/LLVM.h"
+#include "swift/Basic/UnsafePointerLikeTypeTraits.h"
 #include "swift/Driver/Types.h"
 #include "swift/Driver/Util.h"
 #include "llvm/Option/Option.h"
@@ -91,7 +92,9 @@ public:
 private:
   /// The action which caused the creation of this Job, and the conditions
   /// under which it must be run.
-  llvm::PointerIntPair<const JobAction *, 2, Condition> SourceAndCondition;
+  llvm::PointerIntPair<const JobAction *, 2, Condition,
+                       UnsafePointerLikeTypeTraits<const JobAction *>>
+      SourceAndCondition;
 
   /// The list of other Jobs which are inputs to this Job.
   SmallVector<const Job *, 4> Inputs;

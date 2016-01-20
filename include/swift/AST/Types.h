@@ -24,6 +24,7 @@
 #include "swift/AST/Type.h"
 #include "swift/AST/Identifier.h"
 #include "swift/Basic/ArrayRefView.h"
+#include "swift/Basic/UnsafePointerLikeTypeTraits.h"
 #include "swift/Basic/UUID.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMapInfo.h"
@@ -223,7 +224,7 @@ class alignas(1 << TypeAlignInBits) TypeBase {
   /// CanonicalType - This field is always set to the ASTContext for canonical
   /// types, and is otherwise lazily populated by ASTContext when the canonical
   /// form of a non-canonical type is requested.
-  llvm::PointerUnion<TypeBase *, const ASTContext *> CanonicalType;
+  UnsafePointerUnion<TypeBase *, const ASTContext *> CanonicalType;
 
   /// Kind - The discriminator that indicates what subclass of type this is.
   const TypeKind Kind;
@@ -3186,7 +3187,7 @@ DEFINE_EMPTY_CAN_TYPE_WRAPPER(SILBlockStorageType, Type)
 /// optionals (T? -> Optional<T>).
 class SyntaxSugarType : public TypeBase {
   Type Base;
-  llvm::PointerUnion<Type, const ASTContext *> ImplOrContext;
+  UnsafePointerUnion<Type, const ASTContext *> ImplOrContext;
 
 protected:
   // Syntax sugar types are never canonical.
@@ -3275,7 +3276,7 @@ public:
 class DictionaryType : public TypeBase {
   Type Key;
   Type Value;
-  llvm::PointerUnion<Type, const ASTContext *> ImplOrContext;
+  UnsafePointerUnion<Type, const ASTContext *> ImplOrContext;
 
 protected:
   // Syntax sugar types are never canonical.
@@ -3520,9 +3521,9 @@ DEFINE_EMPTY_CAN_TYPE_WRAPPER(SubstitutableType, Type)
 /// existential container.
 class ArchetypeType : public SubstitutableType {
 public:
-  typedef llvm::PointerUnion<AssociatedTypeDecl *, ProtocolDecl *>
-    AssocTypeOrProtocolType;
-  
+  typedef UnsafePointerUnion<AssociatedTypeDecl *, ProtocolDecl *>
+      AssocTypeOrProtocolType;
+
   /// A nested type. Either a dependent associated archetype, or a concrete
   /// type (which may be a bound archetype from an outer context).
   class NestedType {
@@ -3568,7 +3569,7 @@ private:
   ArrayRef<ProtocolDecl *> ConformsTo;
   Type Superclass;
 
-  llvm::PointerUnion<ArchetypeType *, TypeBase *> ParentOrOpened;
+  UnsafePointerUnion<ArchetypeType *, TypeBase *> ParentOrOpened;
   AssocTypeOrProtocolType AssocTypeOrProto;
   Identifier Name;
   unsigned isRecursive: 1;
@@ -3792,8 +3793,8 @@ DEFINE_EMPTY_CAN_TYPE_WRAPPER(AbstractTypeParamType, SubstitutableType)
 /// \sa GenericTypeParamDecl
 class GenericTypeParamType : public AbstractTypeParamType {
   /// The generic type parameter or depth/index.
-  llvm::PointerUnion<GenericTypeParamDecl *, llvm::Fixnum<31>>
-    ParamOrDepthIndex;
+  UnsafePointerUnion<GenericTypeParamDecl *, llvm::Fixnum<31>>
+      ParamOrDepthIndex;
 
 public:
   /// Retrieve a generic type parameter at the given depth and index.
@@ -3927,7 +3928,7 @@ public:
 /// generic parameter.
 class DependentMemberType : public TypeBase {
   Type Base;
-  llvm::PointerUnion<Identifier, AssociatedTypeDecl *> NameOrAssocType;
+  UnsafePointerUnion<Identifier, AssociatedTypeDecl *> NameOrAssocType;
 
   DependentMemberType(Type base, Identifier name, const ASTContext *ctx,
                       RecursiveTypeProperties properties)

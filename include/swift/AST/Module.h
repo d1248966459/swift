@@ -1199,7 +1199,7 @@ inline FileUnit &ModuleDecl::getMainFile(FileUnitKind expectedKind) const {
 /// Wraps either a swift module or a clang one.
 /// FIXME: Should go away once swift modules can support submodules natively.
 class ModuleEntity {
-  llvm::PointerUnion<const ModuleDecl *, const clang::Module *> Mod;
+  UnsafePointerUnion<const ModuleDecl *, const clang::Module *> Mod;
 
 public:
   ModuleEntity() = default;

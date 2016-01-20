@@ -18,6 +18,7 @@
 #define SWIFT_CLANGIMPORTER_SWIFTLOOKUPTABLE_H
 
 #include "swift/Basic/LLVM.h"
+#include "swift/Basic/UnsafePointerLikeTypeTraits.h"
 #include "swift/AST/Identifier.h"
 #include "clang/Serialization/ASTBitCodes.h"
 #include "clang/Serialization/ModuleFileExtension.h"
@@ -80,7 +81,8 @@ public:
   static bool contextRequiresName(ContextKind kind);
 
   /// A single entry referencing either a named declaration or a macro.
-  typedef llvm::PointerUnion<clang::NamedDecl *, clang::MacroInfo *> SingleEntry;
+  typedef UnsafePointerUnion<clang::NamedDecl *, clang::MacroInfo *>
+      SingleEntry;
 
   /// An entry in the table of C entities indexed by full Swift name.
   struct FullTableEntry {

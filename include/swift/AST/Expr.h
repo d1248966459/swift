@@ -2914,8 +2914,9 @@ class ClosureExpr : public AbstractClosureExpr {
 
   /// \brief The body of the closure, along with a bit indicating whether it
   /// was originally just a single expression.
-  llvm::PointerIntPair<BraceStmt *, 1, bool> Body;
-  
+  llvm::PointerIntPair<BraceStmt *, 1, bool,
+                       UnsafePointerLikeTypeTraits<BraceStmt *>> Body;
+
 public:
   ClosureExpr(ParameterList *params, SourceLoc throwsLoc, SourceLoc arrowLoc,
               SourceLoc inLoc, TypeLoc explicitResultType,

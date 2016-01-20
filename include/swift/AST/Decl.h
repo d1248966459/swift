@@ -76,7 +76,7 @@ namespace swift {
 
 /// Represents a clang declaration, macro, or module.
 class ClangNode {
-  llvm::PointerUnion3<const clang::Decl *, const clang::MacroInfo *,
+  UnsafePointerUnion3<const clang::Decl *, const clang::MacroInfo *,
                       const clang::Module *> Ptr;
 
 public:
@@ -639,15 +639,14 @@ protected:
   friend class MemberLookupTable;
 
 private:
-  llvm::PointerUnion<DeclContext *, ASTContext *> Context;
+  UnsafePointerUnion<DeclContext *, ASTContext *> Context;
 
   Decl(const Decl&) = delete;
   void operator=(const Decl&) = delete;
 
 protected:
-
-  Decl(DeclKind kind, llvm::PointerUnion<DeclContext *, ASTContext *> context)
-    : OpaqueBits(0), Context(context) {
+  Decl(DeclKind kind, UnsafePointerUnion<DeclContext *, ASTContext *> context)
+      : OpaqueBits(0), Context(context) {
     DeclBits.Kind = unsigned(kind);
     DeclBits.Invalid = false;
     DeclBits.Implicit = false;
@@ -1874,8 +1873,9 @@ public:
 /// the initializer can be null if there is none.
 class PatternBindingEntry {
   Pattern *ThePattern;
-  llvm::PointerIntPair<Expr *, 1, bool> InitAndChecked;
-  
+  llvm::PointerIntPair<Expr *, 1, bool, UnsafePointerLikeTypeTraits<Expr *>>
+      InitAndChecked;
+
 public:
   PatternBindingEntry(Pattern *P, Expr *E)
     : ThePattern(P), InitAndChecked(E, false) {}
@@ -2135,10 +2135,9 @@ class ValueDecl : public Decl {
   llvm::PointerIntPair<Type, 2, OptionalEnum<Accessibility>> TypeAndAccess;
 
 protected:
-  ValueDecl(DeclKind K,
-            llvm::PointerUnion<DeclContext *, ASTContext *> context,
+  ValueDecl(DeclKind K, UnsafePointerUnion<DeclContext *, ASTContext *> context,
             DeclName name, SourceLoc NameLoc)
-    : Decl(K, context), Name(name), NameLoc(NameLoc) {
+      : Decl(K, context), Name(name), NameLoc(NameLoc) {
     ValueDeclBits.AlreadyInLookupTable = false;
     ValueDeclBits.CheckedRedeclaration = false;
   }
@@ -2350,11 +2349,10 @@ class TypeDecl : public ValueDecl {
   MutableArrayRef<TypeLoc> Inherited;
 
 protected:
-  TypeDecl(DeclKind K, llvm::PointerUnion<DeclContext *, ASTContext *> context,
+  TypeDecl(DeclKind K, UnsafePointerUnion<DeclContext *, ASTContext *> context,
            Identifier name, SourceLoc NameLoc,
-           MutableArrayRef<TypeLoc> inherited) :
-    ValueDecl(K, context, name, NameLoc), Inherited(inherited)
-  {
+           MutableArrayRef<TypeLoc> inherited)
+      : ValueDecl(K, context, name, NameLoc), Inherited(inherited) {
     TypeDeclBits.CheckedInheritanceClause = false;
   }
 
@@ -4043,7 +4041,7 @@ public:
 /// VarDecl - 'var' and 'let' declarations.
 class VarDecl : public AbstractStorageDecl {
 protected:
-  llvm::PointerUnion<PatternBindingDecl*, Stmt*> ParentPattern;
+  UnsafePointerUnion<PatternBindingDecl *, Stmt *> ParentPattern;
 
   VarDecl(DeclKind Kind, bool IsStatic, bool IsLet, SourceLoc NameLoc,
           Identifier Name, Type Ty, DeclContext *DC)
@@ -4201,8 +4199,10 @@ class ParamDecl : public VarDecl {
   TypeLoc typeLoc;
   
   /// The default value, if any, along with whether this is varargs.
-  llvm::PointerIntPair<ExprHandle *, 1, bool> DefaultValueAndIsVariadic;
-  
+  llvm::PointerIntPair<ExprHandle *, 1, bool,
+                       UnsafePointerLikeTypeTraits<ExprHandle *>>
+      DefaultValueAndIsVariadic;
+
   /// True if the type is implicitly specified in the source, but this has an
   /// apparently valid typeRepr.  This is used in accessors, which look like:
   ///    set (value) {

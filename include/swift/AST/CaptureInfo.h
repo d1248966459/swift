@@ -14,6 +14,7 @@
 #define SWIFT_AST_CAPTURE_INFO_H
 
 #include "swift/Basic/LLVM.h"
+#include "swift/Basic/UnsafePointerLikeTypeTraits.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include <vector>
@@ -34,9 +35,12 @@ class FuncDecl;
 /// CapturedValue includes both the declaration being captured, along with flags
 /// that indicate how it is captured.
 class CapturedValue {
-  llvm::PointerIntPair<ValueDecl*, 2, unsigned> Value;
+  using PtrIntPair =
+      llvm::PointerIntPair<UnsafeAssumedAligned2<ValueDecl *>, 2, unsigned>;
 
-  explicit CapturedValue(llvm::PointerIntPair<ValueDecl*, 2, unsigned> V) : Value(V) {}
+  PtrIntPair Value;
+
+  explicit CapturedValue(PtrIntPair V) : Value(V) {}
 
 public:
   friend struct llvm::DenseMapInfo<CapturedValue>;
@@ -81,8 +85,7 @@ namespace llvm {
 template <> struct DenseMapInfo<swift::CapturedValue> {
   using CapturedValue = swift::CapturedValue;
 
-  using PtrIntPairDenseMapInfo =
-      DenseMapInfo<llvm::PointerIntPair<swift::ValueDecl *, 2, unsigned>>;
+  using PtrIntPairDenseMapInfo = DenseMapInfo<swift::CapturedValue::PtrIntPair>;
 
   static inline swift::CapturedValue getEmptyKey() {
     return CapturedValue{PtrIntPairDenseMapInfo::getEmptyKey()};

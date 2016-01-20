@@ -18,6 +18,7 @@
 #define SWIFT_AST_CONCRETEDECLREF_H
 
 #include "swift/Basic/LLVM.h"
+#include "swift/Basic/UnsafePointerLikeTypeTraits.h"
 #include "swift/AST/Substitution.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/PointerUnion.h"
@@ -66,7 +67,7 @@ class ConcreteDeclRef {
                                       ArrayRef<Substitution> substitutions);
   };
 
-  llvm::PointerUnion<ValueDecl *, SpecializedDeclRef *> Data;
+  UnsafePointerUnion<ValueDecl *, SpecializedDeclRef *> Data;
 
   friend class llvm::PointerLikeTypeTraits<ConcreteDeclRef>;
 
@@ -130,10 +131,10 @@ public:
 
 namespace llvm {
   template<> class PointerLikeTypeTraits<swift::ConcreteDeclRef> {
-    typedef llvm::PointerUnion<swift::ValueDecl *,
-                               swift::ConcreteDeclRef::SpecializedDeclRef *>
-      DataPointer;
-    typedef PointerLikeTypeTraits<DataPointer> DataTraits;
+    using P1 = swift::ValueDecl *;
+    using P2 = swift::ConcreteDeclRef::SpecializedDeclRef *;
+    using DataPointer = swift::UnsafePointerUnion<P1, P2>;
+    using DataTraits = PointerLikeTypeTraits<DataPointer>;
 
   public:
     static inline void *
